@@ -1,8 +1,11 @@
 import { createContext, useState, useContext, useEffect } from 'react';
+import { useModal } from './ModalContext';
 
 const AuthContext = createContext();
 
 function AuthProvider({ children }) {
+
+  const { openModal } = useModal();
   // Guardamos el token y la información del usuario en el estado.
   const [token, setToken] = useState(localStorage.getItem('authToken'));
   // isLoading nos ayuda a saber si estamos verificando el token inicial.
@@ -38,20 +41,22 @@ function AuthProvider({ children }) {
     }
   };
 
-   const register = async (name, email, password) => {
-    const response = await fetch('https://apidev.uistify.site/api/auth/register', {
+    const register = async (name, email, password) => {
+    // La URL del endpoint de registro
+    const registerUrl = 'https://apidev.uistify.site/api/auth/register';
+
+    const response = await fetch(registerUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password }),
     });
 
     if (response.ok) {
-      // Si el registro es exitoso, la API nos devuelve un token.
-      // Así que podemos loguear al usuario inmediatamente.
-      const { token: authToken } = await response.json();
-      localStorage.setItem('authToken', authToken);
-      setToken(authToken);
-      return true;
+      // Si el registro es exitoso en el backend (código 200),
+      // abrimos el modal de verificación.
+      openModal('verifyEmail', { email: email });
+      return true; 
+
     } else if (response.status === 409) {
       throw new Error('El correo electrónico ya está registrado.');
     } else {

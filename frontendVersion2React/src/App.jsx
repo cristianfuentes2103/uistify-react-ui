@@ -13,6 +13,7 @@ import MainLayout from './layouts/MainLayout';
 import EditPlaylistModal from './components/modals/EditPlaylistModal';
 import DeletePlaylistModal from './components/modals/DeletePlaylistModal'; 
 import AddToPlaylistModal from './components/modals/AddToPlaylistModal';
+import VerificationModal from './components/modals/VerificationModal';
 
 function App() {
   const { modalView, modalProps } = useModal();
@@ -52,6 +53,7 @@ function App() {
       {modalView === 'addToPlaylist' && <AddToPlaylistModal />}
       {modalView === 'editPlaylist' && <EditPlaylistModal {...modalProps} />}
       {modalView === 'deletePlaylist' && <DeletePlaylistModal {...modalProps} />}
+      <VerificationModal />
     </>
   );
 }
