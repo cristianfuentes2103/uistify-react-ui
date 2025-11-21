@@ -46,13 +46,12 @@ function PlaylistItemSong({ song, index, onPlay, onRemove, onTogglePlayPause }) 
     );
 }
 
-// --- Componente Principal de la Vista de Playlist ---
-function PlaylistView() { 
+function PlaylistView() {
     const [playlist, setPlaylist] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const { playlistId } = useParams(); // OBTIENE el ID de la URL
-    const navigate = useNavigate();      // OBTIENE la función de navegación
+    const { playlistId } = useParams(); 
+    const navigate = useNavigate();      
 
     const { playSong, togglePlayPause } = usePlayer();
     const { showToast, openModal } = useModal();
@@ -63,12 +62,19 @@ function PlaylistView() {
             const data = await apiFetch(`/playlists/${playlistId}`);
             setPlaylist(data);
         } catch (error) {
-            console.error("Error al cargar los detalles de la playlist:", error);
+            console.error("Error al cargar la playlist:", error);
+            if (error.status === 404) { 
+                navigate('/', { replace: true });
+            }
             setPlaylist(null);
         } finally {
             setIsLoading(false);
         }
-    }, [playlistId]);
+    }, [playlistId, navigate]);
+
+    useEffect(() => {
+        fetchPlaylistDetails();
+    }, [fetchPlaylistDetails]);
 
     useEffect(() => {
         if (playlistId) {
@@ -98,6 +104,8 @@ function PlaylistView() {
         openModal('editPlaylist', playlist, { onUpdateSuccess: fetchPlaylistDetails });
     };
 
+
+
     const coverImageUrl = playlist?.songs?.[0]?.pictureUrl;
     const songsToShow = playlist?.songs || [];
 
@@ -122,7 +130,7 @@ function PlaylistView() {
                 <div className="playlist-info">
                     <span className="playlist-type">Playlist</span>
                     <div onClick={handleEditClick} style={{ cursor: 'pointer' }} title="Editar detalles">
-                        <h1 className="playlist-title-h1">{playlist?.title }</h1>
+                        <h1 className="playlist-title-h1">{playlist?.title}</h1>
                         <p className="playlist-description">{playlist?.description}</p>
                     </div>
                 </div>

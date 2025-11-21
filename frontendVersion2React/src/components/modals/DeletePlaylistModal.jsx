@@ -1,47 +1,45 @@
+// src/components/modals/DeletePlaylistModal.jsx
 import { useState } from 'react';
 import { useModal } from '../../context/ModalContext';
 import { apiFetch } from '../../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function DeletePlaylistModal({ onUpdateSuccess }) {
-  const { closeModal, modalView, modalData, showToast } = useModal();
+  const { closeModal, modalData, showToast } = useModal();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isLoading, setIsLoading] = useState(false);
   const playlistToDelete = modalData;
 
   const handleDelete = async () => {
     if (!playlistToDelete) return;
-
     setIsLoading(true);
     try {
       await apiFetch(`/playlists/${playlistToDelete.id}`, 'DELETE');
-      
       showToast(`Playlist "${playlistToDelete.title}" eliminada.`, 'success');
       
       if (onUpdateSuccess) {
-        onUpdateSuccess(); 
-      }
-      const currentPath = window.location.pathname;
-      const deletedPlaylistPath = `/playlist/${playlistToDelete.id}`;
-
-      if (currentPath === deletedPlaylistPath) {
-        navigate('/');
+        onUpdateSuccess();
       }
       
       closeModal();
       
+      const currentPath = location.pathname;
+      const deletedPlaylistPath = `/playlist/${playlistToDelete.id}`;
+
+      if (currentPath === deletedPlaylistPath) {
+        navigate('/', { replace: true });
+      }
+      
     } catch (error) {
       console.error("Error al eliminar la playlist:", error);
       showToast('No se pudo eliminar la playlist.', 'error');
+      closeModal();
     } finally {
       setIsLoading(false);
     }
   };
-
-  if (modalView !== 'deletePlaylist' || !playlistToDelete) {
-    return null;
-  }
 
   return (
     <div className="modal-backdrop">
