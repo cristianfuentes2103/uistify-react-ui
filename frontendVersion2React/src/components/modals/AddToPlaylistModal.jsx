@@ -16,6 +16,7 @@ function AddToPlaylistModal() {
     if (modalView === 'addToPlaylist') {
       setIsLoading(true);
       setFeedback({ message: '', type: '' }); // Limpia feedback anterior
+      setPlaylists([]);
 
       const fetchUserPlaylists = async () => {
         try {
@@ -53,7 +54,7 @@ function AddToPlaylistModal() {
   return (
     <div className="modal-backdrop">
       <div className="modal-content">
-        <h2>Añadir a la playlist</h2>
+        <h2 style={{ textAlign: 'center'}}>Añadir a la playlist</h2>
 
         {feedback.message ? (
           <p className={`modal-feedback ${feedback.type}`}>
@@ -65,9 +66,9 @@ function AddToPlaylistModal() {
             id="modal-playlist-list" 
             className={`modal-playlist-list ${isAdding ? 'is-loading' : ''}`}
           >
-            {isLoading ? (
+         {isLoading ? (
               <div className="modal-list-loader is-loading"></div>
-            ) : (
+            ) : playlists.length > 0 ? (
               playlists.map(playlist => (
                 <div 
                   key={playlist.id} 
@@ -77,6 +78,10 @@ function AddToPlaylistModal() {
                   {playlist.title}
                 </div>
               ))
+            ) : (
+              <p style={{ textAlign: 'center', color: '#b3b3b3' }}>
+                No tienes playlists. ¡Crea una primero!
+              </p>
             )}
           </div>
         )}
