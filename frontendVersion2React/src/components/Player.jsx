@@ -1,5 +1,7 @@
 import { usePlayer } from '../context/PlayerContext';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/AuthContext';
+import VolumeIcon from './VolumeIcon';
+
 // función auxiliar para formatear el tiempo 
 const formatTime = (seconds) => {
   if (isNaN(seconds) || seconds <= 0) return '0:00';
@@ -17,18 +19,23 @@ function Player() {
     togglePlayPause,
     playNext,
     playPrevious,
-    seek
+    seek,
+    volume,
+    changeVolume
   } = usePlayer();
 
   const { isLoggedIn } = useAuth(); // <-- estado de login
   // --- ESTADO DESHABILITADO ---
   // Los controles deben estar deshabilitados si no hay una sesión activa O si no hay una canción cargada.
   const isDisabled = !isLoggedIn || !currentSong;
-  // ---------------------------------------------
+
   const handleSeek = (e) => {
     seek(Number(e.target.value));
   };
 
+  const handleVolumeChange = (e) => {
+    changeVolume(e.target.value);
+  };
   return (
     <footer className="player-bar">
       {/* Columna Izquierda: Información de la canción */}
@@ -54,13 +61,13 @@ function Player() {
       {/* Columna Central: Controles y barra de progreso */}
       <div className="player-center">
         <div className="player-controls">
-           <button onClick={playPrevious} className="player-btn secondary" title="Anterior" disabled={isDisabled}>
+          <button onClick={playPrevious} className="player-btn secondary" title="Anterior" disabled={isDisabled}>
             <i className="icon-prev"></i>
           </button>
           <button onClick={togglePlayPause} className="player-btn" title={isPlaying ? 'Pausar' : 'Reproducir'} disabled={isDisabled}>
             <i className={isPlaying ? 'icon-pause' : 'icon-play'}></i>
           </button>
-            <button onClick={playNext} className="player-btn secondary" title="Siguiente" disabled={isDisabled}>
+          <button onClick={playNext} className="player-btn secondary" title="Siguiente" disabled={isDisabled}>
             <i className="icon-next"></i>
           </button>
         </div>
@@ -81,7 +88,19 @@ function Player() {
 
       {/* Columna Derecha: Control de volumen (Placeholder) */}
       <div className="player-right">
-        {/* Aquí irán los controles de volumen en el futuro */}
+        <div className="volume-container">
+          <VolumeIcon volume={volume} />
+          <input
+            type="range"
+            id="volume-slider"
+            className="volume-slider"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={handleVolumeChange}
+          />
+        </div>
       </div>
     </footer>
   );

@@ -14,10 +14,37 @@ function PlayerProvider({ children }) {
     const [duration, setDuration] = useState(0);
     const [queue, setQueue] = useState([]);
     const [queueIndex, setQueueIndex] = useState(-1);
-    const { isLoggedIn } = useAuth(); // <-- 2. Obtén el estado de login
+    const { isLoggedIn } = useAuth();
 
     const audioRef = useRef(new Audio());
     const currentObjectUrl = useRef(null);
+
+    // --- EFECTO PARA INICIALIZAR Y SINCRONIZAR EL VOLUMEN ---
+    useEffect(() => {
+        // Al cargar, establece el volumen inicial del elemento de audio
+        audioRef.current.volume = volume;
+    }, []); // Se ejecuta solo una vez al inicio
+
+    const getInitialVolume = () => {
+        const savedVolume = localStorage.getItem('playerVolume');
+        // Si `savedVolume` es `null` o `undefined`, devolvemos 1 por defecto.
+        if (savedVolume === null || savedVolume === undefined) {
+            return 1;
+        }
+        // Si existe, nos aseguramos de convertirlo a número.
+        const volumeAsNumber = Number(savedVolume);
+        // Si la conversión falla (ej. era un string inválido), también devolvemos 1.
+        return isNaN(volumeAsNumber) ? 1 : volumeAsNumber;
+    };
+
+    const [volume, setVolume] = useState(getInitialVolume());
+    // --- ¡NUEVA FUNCIÓN PARA CAMBIAR EL VOLUMEN! ---
+    const changeVolume = (newVolume) => {
+        const volumeValue = Number(newVolume);
+        setVolume(volumeValue); // Actualiza el estado de React
+        audioRef.current.volume = volumeValue; // Actualiza el volumen del elemento <audio>
+        localStorage.setItem('playerVolume', volumeValue); // Guarda la preferencia
+    };
 
     const playSong = useCallback(async (song, songList) => {
         showToast('Cargando canción...', 'info', 2000);
@@ -104,23 +131,23 @@ function PlayerProvider({ children }) {
         }
     }, []); // `seek` no tiene dependencias porque solo interactúa con el audioRef
 
-      useEffect(() => {
-    // Si el estado de `isLoggedIn` cambia a `false`...
-    if (!isLoggedIn) {
-      // 1. Pausamos la reproducción
-      audioRef.current.pause();
-      
-      // 2. Quitamos la fuente para que no se pueda volver a dar play
-      audioRef.current.src = '';
+    useEffect(() => {
+        // Si el estado de `isLoggedIn` cambia a `false`...
+        if (!isLoggedIn) {
+            // 1. Pausamos la reproducción
+            audioRef.current.pause();
 
-      // 3. Reseteamos todos los estados del reproductor
-      setCurrentSong(null);
-      setQueue([]);
-      setQueueIndex(-1);
-      setProgress(0);
-      setDuration(0);
-    }
-  }, [isLoggedIn]); // <-- Este efecto se dispara cada vez que `isLoggedIn` cambia
+            // 2. Quitamos la fuente para que no se pueda volver a dar play
+            audioRef.current.src = '';
+
+            // 3. Reseteamos todos los estados del reproductor
+            setCurrentSong(null);
+            setQueue([]);
+            setQueueIndex(-1);
+            setProgress(0);
+            setDuration(0);
+        }
+    }, [isLoggedIn]); // <-- Este efecto se dispara cada vez que `isLoggedIn` cambia
     // --- useEffect para los eventos de audio ---
     useEffect(() => {
         const audio = audioRef.current;
@@ -136,7 +163,7 @@ function PlayerProvider({ children }) {
         audio.addEventListener('timeupdate', handleTimeUpdate);
         audio.addEventListener('loadedmetadata', handleLoadedMetadata);
         audio.addEventListener('ended', handleEnded);
-       
+
 
         return () => {
             audio.removeEventListener('play', handlePlay);
@@ -144,13 +171,13 @@ function PlayerProvider({ children }) {
             audio.removeEventListener('timeupdate', handleTimeUpdate);
             audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
             audio.removeEventListener('ended', handleEnded);
-           
+
         };
     }, [playNext]);
 
     const value = {
         currentSong, isPlaying, isLoadingSong, progress, duration,
-        playSong, pauseSong, togglePlayPause, playNext, playPrevious, seek,
+        playSong, pauseSong, togglePlayPause, playNext, playPrevious, seek, volume, changeVolume
     };
 
     return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
