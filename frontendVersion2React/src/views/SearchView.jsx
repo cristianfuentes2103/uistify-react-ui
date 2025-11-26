@@ -24,7 +24,7 @@ function SongItem({ song, onPlay }) {
         openModal('addToPlaylist', song);
     };
 
-    const coverImage = song.pictureUrl || '/public/img/song.png';
+    const coverImage = song.pictureUrl || '/img/song.png';
     
     return (
         <div className={`song-item ${isCurrentSong ? 'is-playing' : ''}`} data-song-id={song.id}>
@@ -33,7 +33,7 @@ function SongItem({ song, onPlay }) {
                     src={coverImage} 
                     alt={song.title} 
                     className="song-item-cover"
-                    onError={(e) => { e.target.src = '/public/img/song.png'; }}
+                    onError={(e) => { e.target.src = '/img/song.png'; }}
                 />
                 <button onClick={handlePlayClick} className="song-item-play-btn">
                     <PlayerIcon type={isCurrentSong && isPlaying ? 'pause' : 'play'} />

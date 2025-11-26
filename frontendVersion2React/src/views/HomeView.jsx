@@ -46,7 +46,7 @@ function HomeView() {
               return {
                 id: playlist.id,
                 title: playlist.title,
-                cover: songs[0]?.pictureUrl || '/public/img/song.png',
+                cover: songs[0]?.pictureUrl || '/img/song.png',
                 artists: [playlist.ownerName || 'Usuario de UisTiFy'],
                 isPlaylist: true,
               };
@@ -54,7 +54,7 @@ function HomeView() {
               return {
                 id: playlist.id,
                 title: playlist.title,
-                cover: '/public/img/song.png',
+                cover: '/img/song.png',
                 artists: ['Usuario de UisTiFy'],
                 isPlaylist: true,
               };

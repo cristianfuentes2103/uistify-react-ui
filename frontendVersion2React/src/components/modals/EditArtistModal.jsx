@@ -68,7 +68,7 @@ function EditArtistModal() {
     }
   };
   const handleImageError = (e) => {
-    e.target.src = '/public/img/default-artist.png'; 
+    e.target.src = '/img/default-artist.png'; 
   };
 
   if (modalView !== 'editArtist') {
@@ -99,7 +99,7 @@ function EditArtistModal() {
             <div className="edit-modal-cover">
               <img
                 id="edit-artist-cover-img"
-                src={profilePictureUrl || '/public/img/default-artist.png'}
+                src={profilePictureUrl || '/img/default-artist.png'}
                 alt="Foto del artista"
                 onError={handleImageError} // Evita imagen rota
                 style={{ objectFit: 'cover' }}

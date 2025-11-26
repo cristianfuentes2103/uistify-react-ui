@@ -82,7 +82,7 @@ function UploadSongModal() {
 
     try {
       const formData = new FormData();
-      const defaultImage = '/public/img/song.png';
+      const defaultImage = '/img/song.png';
 
       const songDto = {
         title: title.trim(),
