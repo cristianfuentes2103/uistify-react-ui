@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: dev
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,12 +24,20 @@ jobs:
       - name: Inject API_URL
         shell: bash
         env:
-          API_URL: ${{ vars.API_URL }}
+          API_URL_VAR: ${{ vars.API_URL }}
+          API_URL_SECRET: ${{ secrets.API_URL }}
         run: |
           set -e
+          API_URL="${API_URL_VAR:-$API_URL_SECRET}"
+          if [ -z "$API_URL" ]; then
+            echo "Error: API_URL is empty. Please set it in GitHub Variables or Secrets."
+            exit 1
+          fi
           FILE="frontendVersion2React/src/services/config.js"
           SAFE_API="${API_URL//&/\\&}"
           sed -i 's|\${API_URL}|'"$SAFE_API"'|g' "$FILE"
+          echo "Content of config.js after replacement:"
+          cat "$FILE"
 
       - name: Build Project
         working-directory: frontendVersion2React
