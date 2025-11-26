@@ -82,7 +82,7 @@ function EditPlaylistModal() {
 
           <div className="edit-modal-fields-container">
             <div className="edit-modal-cover">
-              <img id="edit-playlist-cover-img" src={playlist.songs?.[0]?.pictureUrl || '/src/img/song.png'} alt="Portada" />
+              <img id="edit-playlist-cover-img" src={playlist.songs?.[0]?.pictureUrl || '/img/song.png'} alt="Portada" />
             </div>
             <div className="edit-modal-fields">
               <input 
