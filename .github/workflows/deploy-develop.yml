@@ -20,10 +20,18 @@ jobs:
         working-directory: frontendVersion2React
         run: npm ci
 
+      - name: Inject API_URL
+        shell: bash
+        env:
+          API_URL: ${{ vars.API_URL }}
+        run: |
+          set -e
+          FILE="frontendVersion2React/src/services/config.js"
+          SAFE_API="${API_URL//&/\\&}"
+          sed -i 's|\${API_URL}|'"$SAFE_API"'|g' "$FILE"
+
       - name: Build Project
         working-directory: frontendVersion2React
-        env:
-          VITE_API_URL: ${{ vars.API_URL }}
         run: npm run build
 
       - name: Upload Artifact
