@@ -9,7 +9,6 @@ import SearchView from './views/SearchView';
 import PlaylistView from './views/PlaylistView';
 import MainLayout from './layouts/MainLayout';
 import BecomeArtistModal from './components/modals/BecomeArtistModal';
-import ArtistDashboardView from './views/ArtistDashboardView';
 import ArtistView from './views/ArtistView'; 
 
 // Modales
@@ -49,7 +48,7 @@ function App() {
           <Route index element={<HomeView />} />
           <Route path="search" element={<SearchView />} />
             <Route path="playlist/:playlistId" element={<PlaylistView />} />
-          <Route path="artist/dashboard" element={<ArtistDashboardView />} />
+          <Route path="artist" element={<ArtistView />} />
           <Route path="*" element={<h1>Contenido no encontrado dentro de la app</h1>} />
         </Route>
       </Routes>
