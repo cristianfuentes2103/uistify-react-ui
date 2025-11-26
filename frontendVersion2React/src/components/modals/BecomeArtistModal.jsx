@@ -81,6 +81,7 @@ function BecomeArtistModal() {
                />
             </div>
 
+            {/* Campos */}
             <div className="edit-modal-fields">
               <div className="input-group">
                 <label className="modal-label">Nombre Artístico</label>
