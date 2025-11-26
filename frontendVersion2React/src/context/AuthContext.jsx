@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { useModal } from './ModalContext';
+import { API_BASE_URL } from '../services/config';
 
 const AuthContext = createContext();
 
@@ -18,14 +19,14 @@ function AuthProvider({ children }) {
       if (storedToken) {
         setToken(storedToken);
       }
-      setIsLoading(false); 
+      setIsLoading(false);
     };
     verifyToken();
   }, []);
 
   // Función de Login: llama a la API y guarda el token en el estado y localStorage.
   const login = async (email, password) => {
-    const response = await fetch('https://apidev.uistify.site/api/auth/login', {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -41,8 +42,8 @@ function AuthProvider({ children }) {
     }
   };
 
-    const register = async (name, email, password) => {
-    const registerUrl = 'https://apidev.uistify.site/api/auth/register';
+  const register = async (name, email, password) => {
+    const registerUrl = `${API_BASE_URL}/auth/register`;
 
     const response = await fetch(registerUrl, {
       method: 'POST',
@@ -54,7 +55,7 @@ function AuthProvider({ children }) {
       // Si el registro es exitoso en el backend (código 200),
       // abrimos el modal de verificación.
       openModal('verifyEmail', { email: email });
-      return true; 
+      return true;
 
     } else if (response.status === 409) {
       throw new Error('El correo electrónico ya está registrado.');
@@ -68,7 +69,7 @@ function AuthProvider({ children }) {
     localStorage.removeItem('authToken');
     setToken(null); // Actualizar el estado
   };
-  
+
   // Determinamos si el usuario está autenticado basándonos en si existe el token.
   const isLoggedIn = !!token;
 

@@ -3,7 +3,7 @@ import { useModal } from './ModalContext';
 import { useAuth } from './AuthContext';
 
 const PlayerContext = createContext();
-const API_BASE_URL = 'https://apidev.uistify.site';
+import { API_BASE_URL } from '../services/config';
 
 function PlayerProvider({ children }) {
     const { showToast } = useModal();
@@ -12,7 +12,7 @@ function PlayerProvider({ children }) {
     const [isLoadingSong, setIsLoadingSong] = useState(false);
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [queue, setQueue] = useState([]); 
+    const [queue, setQueue] = useState([]);
     const { isLoggedIn } = useAuth();
 
     const audioRef = useRef(new Audio());
@@ -63,15 +63,15 @@ function PlayerProvider({ children }) {
 
         try {
             const token = localStorage.getItem('authToken');
-            const response = await fetch(`${API_BASE_URL}/api/file/${song.sourceUrl}`, { 
-                headers: { 'Authorization': `Bearer ${token}` } 
+            const response = await fetch(`${API_BASE_URL}/file/${song.sourceUrl}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-            
+
             if (!response.ok) throw new Error('Error cargando audio');
-            
+
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
-            
+
             currentObjectUrl.current = url;
             audioRef.current.src = url;
             await audioRef.current.play();
@@ -170,9 +170,9 @@ function PlayerProvider({ children }) {
 
     const value = {
         currentSong, isPlaying, isLoadingSong, progress, duration, queue,
-        playSong, pauseSong, togglePlayPause, playNext, playPrevious, seek, 
-        volume, changeVolume, 
-        removeFromQueue, updateQueue 
+        playSong, pauseSong, togglePlayPause, playNext, playPrevious, seek,
+        volume, changeVolume,
+        removeFromQueue, updateQueue
     };
 
     return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
