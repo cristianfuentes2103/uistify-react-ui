@@ -4,7 +4,7 @@ import { apiFetch } from '../../services/api';
 
 function EditPlaylistModal() {
   const { closeModal, modalView, modalData, modalProps } = useModal();
-  const playlist = modalData;
+  const playlist = modalData; 
   const onUpdateSuccess = modalProps?.onUpdateSuccess;
   
   const [title, setTitle] = useState('');
@@ -31,8 +31,24 @@ function EditPlaylistModal() {
     setIsLoading(true);
     setApiError('');
 
+    // PROTECCIÓN CRÍTICA:
+    // Forzamos que sea un booleano. Si viene undefined, usamos false, 
+    // pero si viene true, se mantiene true.
+    const currentVisibility = playlist?.publicPlaylist === true;
+    console.log("Enviando actualización:", {
+        id: playlist.id, 
+        title, 
+        publicPlaylist: currentVisibility 
+    });
+
     try {
-      const updatedPlaylistData = { id: playlist.id, title, description };
+      const updatedPlaylistData = { 
+        id: playlist.id, 
+        title, 
+        description,
+        publicPlaylist: currentVisibility 
+      };
+
       await apiFetch('/playlists', 'PUT', updatedPlaylistData);
       
       if (onUpdateSuccess) onUpdateSuccess();
@@ -57,7 +73,6 @@ function EditPlaylistModal() {
         </div>
 
         <form onSubmit={handleSubmit} id="edit-playlist-form" className="edit-modal-body">
-          {/* Mostramos el error de validación O el error de la API */}
           {(validationError || apiError) && (
             <div className="modal-error-message">
               <span className="error-icon">!</span>
@@ -78,7 +93,6 @@ function EditPlaylistModal() {
                 maxLength="50"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                // La clase de error se aplica dinámicamente
                 className={isTitleInvalid ? 'error-field' : ''}
               />
               <p id="name-char-counter" className={`char-counter ${title.length >= 50 ? 'limit-reached' : ''}`}>

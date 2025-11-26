@@ -1,4 +1,3 @@
-// src/components/modals/VerificationModal.jsx
 import { useModal } from '../../context/ModalContext';
 
 function VerificationModal() {

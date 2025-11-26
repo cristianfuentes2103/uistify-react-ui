@@ -573,12 +573,12 @@ body {
 }
 
 .album-grid {
-    display: grid;
+    display: flex;
     grid-auto-flow: column;
     grid-auto-columns: minmax(155px, 1fr);
     overflow-x: hidden;
     scrollbar-width: none;
-    padding: 8px 0;
+    padding: 8px;
 }
 
 .album-grid::-webkit-scrollbar {
@@ -593,6 +593,13 @@ body {
     height: 202px;
     flex-shrink: 0;
     cursor: pointer;
+    margin-right: 20px;
+    margin-top: 0px;
+}
+
+.album-grid a {
+    text-decoration: none;
+    color: inherit;
 }
 
 .album-card img {
@@ -1006,6 +1013,11 @@ body {
 
 .main-header-list {
     padding: 30px 10px 0px 30px;
+    display: flex;
+}
+
+.main-header-list-artist {
+    padding: 30px 10px 0px 7px;
     display: flex;
 }
 
@@ -1639,10 +1651,11 @@ body {
 /* --- Columna Derecha --- */
 
 .player-right {
-  display: flex;
-  justify-content: center;
-  
+    display: flex;
+    justify-content: center;
+
 }
+
 /* Contenedor */
 .volume-container {
     display: flex;
@@ -1913,7 +1926,7 @@ body {
 }
 
 .toast.error {
-    padding-top: 5px;
+    padding-top: 20px;
     padding-bottom: 35px;
     background-color: #d93025;
     text-align: center;
@@ -1982,6 +1995,676 @@ body {
     text-align: center;
     color: var(--text-secondary-color);
     font-size: 1rem;
+}
+
+/* ============================================= */
+/* ===== ESTILOS PARA LA VISTA DE ARTISTA ===== */
+/* ============================================= */
+/* --- LAYOUT GENERAL VISTA ARTISTA --- */
+
+.artist-view-content {
+    background: linear-gradient(180deg, #222222 0%, #121212 100%);
+    flex: 1;
+}
+
+.artist-view-locked {
+    background: linear-gradient(180deg, #222222 0%, #121212 100%);
+    flex: 1;
+
+}
+
+.artist-view-container {
+    padding: 20px 40px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+
+}
+
+/* --- ESTADO BLOQUEADO (NO LOGUEADO) --- */
+.locked-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    padding-bottom: 100px;
+}
+
+.locked-icon {
+    font-size: 5rem;
+    margin-bottom: 20px;
+    opacity: 0.6;
+}
+
+.locked-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.locked-description {
+    color: #b3b3b3;
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.btn-secondary-outline {
+    background: transparent;
+    border: 1px solid #ffffff;
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+}
+
+.btn-secondary-outline:hover {
+    background: #fff;
+    color: #000;
+    transform: scale(1.05);
+}
+
+/* --- DASHBOARD DEL ARTISTA --- */
+.artist-hero {
+    display: flex;
+    align-items: flex-end;
+    gap: 40px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.artist-hero-image-wrapper {
+    width: 230px;
+    height: 230px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    /* Redondo estilo Spotify */
+    overflow: hidden;
+    background-color: #333;
+    flex-shrink: 0;
+}
+
+.artist-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.artist-hero-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 5px;
+}
+
+.artist-hero-name {
+    font-size: clamp(3rem, 6vw, 5rem);
+    /* Texto responsive grande */
+    font-weight: 900;
+    margin: 0;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: -1px;
+}
+
+.artist-hero-country {
+    color: #b3b3b3;
+    font-size: 1.1rem;
+    margin: 15px 0 25px 0;
+}
+
+.artist-hero-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-hero-primary {
+    background-color: var(--primary-color);
+    color: #000;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-hero-primary:hover {
+    transform: scale(1.05);
+    background-color: var(--primary-color);
+}
+
+.btn-hero-secondary {
+    background-color: transparent;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 14px 24px;
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-hero-secondary:hover {
+    border-color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.artist-divider {
+    border: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin-bottom: 40px;
+}
+
+.empty-songs-placeholder {
+    padding: 50px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    color: #999;
+}
+
+/* --- TARJETA "CONVIÉRTETE EN ARTISTA" --- */
+.become-artist-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.promo-card {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    padding: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    max-width: 900px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.promo-tag {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+.promo-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.promo-text {
+    color: #b3b3b3;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.btn-promo-action {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 16px 36px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-promo-action:hover {
+    transform: scale(1.05);
+}
+
+.music-note-icon {
+    font-size: 8rem;
+    opacity: 0.1;
+    transform: rotate(15deg);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .artist-hero {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .artist-hero-actions {
+        justify-content: center;
+    }
+
+    .promo-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .promo-visual {
+        display: none;
+    }
+}
+
+/* --- ESTILOS DE TABLA DE CANCIONES (ArtistView) --- */
+.artist-songs-table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.song-row-header,
+.song-row {
+    display: grid;
+    /* Grid layout: Index | Título+Img | Álbum | Fecha | Tiempo */
+    grid-template-columns: 40px 4fr 3fr 2fr 60px;
+    padding: 10px 16px;
+    align-items: center;
+    gap: 16px;
+    border-radius: 4px;
+}
+
+.song-row-header {
+    color: #b3b3b3;
+    font-size: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+}
+
+.song-row {
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.song-row:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.song-row:hover .index-num {
+    display: none;
+}
+
+.song-row:hover .index-play {
+    display: block;
+}
+
+.index-play {
+    display: none;
+    color: #fff;
+    font-size: 0.8rem;
+}
+
+.index-num {
+    color: #b3b3b3;
+    font-size: 0.9rem;
+}
+
+.col-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.song-row-cover {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.song-row-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.song-name {
+    font-weight: 500;
+    font-size: 1rem;
+    color: #fff;
+}
+
+.song-sub {
+    font-size: 0.8rem;
+    color: #b3b3b3;
+}
+
+.col-album,
+.col-date,
+.col-time {
+    color: #b3b3b3;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- ESTILOS MODAL UPLOAD (Inputs Extras) --- */
+.modal-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: block;
+    color: #fff;
+}
+
+.file-upload-area {
+    border: 2px dashed #444;
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.file-upload-area:hover {
+    border-color: #777;
+}
+
+.file-upload-area.file-selected {
+    border-color: #1ed760;
+    background-color: rgba(30, 215, 96, 0.05);
+}
+
+/* Responsividad para la tabla */
+@media (max-width: 768px) {
+
+    .song-row-header,
+    .song-row {
+        grid-template-columns: 40px 1fr 60px;
+        /* Ocultamos álbum y fecha en móvil */
+    }
+
+    .col-album,
+    .col-date {
+        display: none;
+    }
+}
+
+/*Modal Artista*/
+
+.input-group-artist-modal input {
+    width: 95%;
+    padding: 12px;
+    background-color: #3e3e3e;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: none;
+}
+
+/* Formulario para Subir Canción */
+
+.upload-song-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-field label {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* Reutilizamos los estilos de input del modal de edición */
+.form-field input[type="text"],
+.form-field input[type="file"] {
+    padding: 12px;
+    background-color: #3e3e3e;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: white;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+/* Estilos específicos para el input de archivo */
+.form-field input[type="file"]::file-selector-button {
+    background-color: #535353;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 12px;
+}
+
+.form-field-label {
+    text-align: center;
+    color: var(--text-secondary-color);
+}
+
+
+/*Vista para Home  y Search*/
+.music-title-gradient {
+    font-size: 3.2rem;
+    text-align: center;
+    font-weight: 800;
+    margin-top: 40px;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, #1db954, #1ed760, #1db954);
+    -webkit-background-clip: text;
+    color: transparent;
+    letter-spacing: 1px;
+    text-shadow: 0 0 20px rgba(29, 185, 84, 0.4);
+    animation: glow-text 4s ease-in-out infinite;
+}
+
+@keyframes glow-text {
+
+    0%,
+    100% {
+        text-shadow: 0 0 18px rgba(29, 185, 84, 0.4);
+    }
+
+    50% {
+        text-shadow: 0 0 28px rgba(29, 185, 84, 0.8);
+    }
+}
+
+.community-playlists-title {
+    font-size: 2.2rem;
+    margin-top: 40px;
+    margin-bottom: 15px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+    text-align: center;
+    padding-left: 5px;
+    position: relative;
+}
+
+.community-playlists-title::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 4px;
+    margin-top: 8px;
+    background: linear-gradient(90deg, #1db954, #ffffff);
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.7);
+}
+
+.music-title-gradient {
+    font-size: 3.2rem;
+    text-align: center;
+    font-weight: 900;
+    margin-top: 40px;
+    margin-bottom: 10px;
+
+    /* Gradiente animado */
+    background: linear-gradient(90deg,
+            #ff005e,
+            #ffb800,
+            #1db954,
+            #00c3ff,
+            #b400ff,
+            #ff005e);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    color: transparent;
+
+    animation: glow-bounce 8s infinite ease-in-out,
+        colorShift 10s infinite linear;
+}
+
+/* Parpadeo suave tipo neón */
+@keyframes glow-bounce {
+
+    0%,
+    100% {
+        text-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+    }
+
+    50% {
+        text-shadow: 0 0 22px rgba(255, 255, 255, 0.7);
+    }
+}
+
+/* Movimiento del gradiente para cambiar de colores */
+@keyframes colorShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.community-shelf-container {
+    transition: transform 0.2s ease;
+}
+
+.community-shelf-container:hover {
+    transform: scale(1.01);
+}
+
+.no-playlists-message {
+    color: #b3b3b3;
+    padding: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+    opacity: 0.8;
+}
+
+/*Toggle Switch*/
+
+/* Contenedor para alinear y capturar el clic */
+.toggle-switch-container {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox {
+    display: none;
+}
+
+.slider {
+    width: 40px;
+    /* Reducimos un poco el tamaño para que encaje mejor en la sidebar */
+    height: 20px;
+    background-color: #535353;
+    /* Un gris más oscuro para el fondo */
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    border: 2px solid transparent;
+    transition: .3s;
+    box-shadow: 0 0 5px 0 rgb(0, 0, 0, 0.25) inset;
+    cursor: pointer;
+}
+
+.slider::before {
+    content: '';
+    display: block;
+    width: 14px;
+    /* Tamaño del círculo interior */
+    height: 14px;
+    background-color: #b3b3b3;
+    /* Color del círculo apagado */
+    transform: translateX(2px);
+    /* Posición inicial */
+    border-radius: 50%;
+    transition: .3s;
+    box-shadow: 0 0 5px 2px rgb(0, 0, 0, 0.25);
+}
+
+.checkbox:checked~.slider::before {
+    transform: translateX(22px);
+    /* Posición final */
+    background-color: #fff;
+    /* Color del círculo encendido */
+}
+
+.checkbox:checked~.slider {
+    background-color: var(--primary-color);
+    /* Usamos el color primario de la app */
+}
+
+/* styles.css */
+
+.playlist-item-wrapper {
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    padding-right: 8px;
+    /* Espacio para el switch */
+    transition: background-color 0.2s ease;
+}
+
+.playlist-item-wrapper:hover {
+    background-color: #282828;
+}
+
+/* Hacemos que el Link ocupe el espacio disponible */
+.playlist-item-wrapper .playlist-item {
+    flex-grow: 1;
 }
 
 /* ======================================================= */
@@ -2106,6 +2789,16 @@ body {
 .volume-icon {
     width: 17px;
     height: 17px;
+    display: inline-block;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.icon-artist {
+    width: 30px;
+    height: 30px;
+    background: url("../icons/Artist.svg");
     display: inline-block;
     background-repeat: no-repeat;
     background-position: center;

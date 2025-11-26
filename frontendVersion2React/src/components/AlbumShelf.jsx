@@ -1,4 +1,3 @@
-// src/components/AlbumShelf.jsx
 import { useRef } from 'react';
 import AlbumCard from './AlbumCard'; 
 function AlbumShelf({ albums }) {

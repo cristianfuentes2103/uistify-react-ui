@@ -5,9 +5,8 @@ import { usePlayer } from '../context/PlayerContext';
 import PlayerIcon from '../components/PlayerIcon'; 
 import { useModal } from '../context/ModalContext'; 
 
-
 function SongItem({ song, onPlay }) {
-    const { currentSong, isPlaying, togglePlayPause} = usePlayer();
+    const { currentSong, isPlaying, togglePlayPause } = usePlayer();
     const isCurrentSong = currentSong?.id === song.id;
     const { openModal } = useModal();
     
@@ -24,11 +23,20 @@ function SongItem({ song, onPlay }) {
         e.stopPropagation();
         openModal('addToPlaylist', song);
     };
+
+    // Lógica para la imagen: Si viene vacía, usa la default
+    const coverImage = song.pictureUrl || '/src/assets/img/song.png';
     
     return (
         <div className={`song-item ${isCurrentSong ? 'is-playing' : ''}`} data-song-id={song.id}>
             <div className="song-item-cover-container">
-                <img src={song.pictureUrl} alt={song.title} className="song-item-cover" />
+                <img 
+                    src={coverImage} 
+                    alt={song.title} 
+                    className="song-item-cover"
+                    // Si la URL falla (404), ponemos la default
+                    onError={(e) => { e.target.src = '/src/assets/img/song.png'; }}
+                />
                 <button onClick={handlePlayClick} className="song-item-play-btn">
                     <PlayerIcon type={isCurrentSong && isPlaying ? 'pause' : 'play'} />
                 </button>
@@ -41,9 +49,9 @@ function SongItem({ song, onPlay }) {
                     <p className="song-artist">{song.artist}</p>
                 </div>
             </div>
-            <div className="song-item-album">{song.album}</div>
+            <div className="song-item-album">{song.album || 'Sencillo'}</div>
             <div className="song-item-duration">
-                <span>{new Date(song.duration * 1000).toISOString().substr(14, 5)}</span>
+                <span>{song.duration ? new Date(song.duration * 1000).toISOString().substr(14, 5) : '--:--'}</span>
                 <button onClick={handleAddClick} className="add-to-playlist-btn" title="Añadir a playlist">
                     +
                 </button>
@@ -63,41 +71,64 @@ function SearchView() {
     const [currentPage, setCurrentPage] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [allSongsLoaded, setAllSongsLoaded] = useState(false);
-    const pageSize = 20;
-    const mainContentRef = useRef(null);
+    
+    const pageSize = 25;
+    
+    // USAMOS REFS PARA EL SCROLL:
+    // Esto evita que el listener se rompa por closures obsoletos
+    const isLoadingRef = useRef(isLoading);
+    const allSongsLoadedRef = useRef(allSongsLoaded);
+
+    // Mantenemos las refs sincronizadas con el estado
+    useEffect(() => {
+        isLoadingRef.current = isLoading;
+    }, [isLoading]);
+
+    useEffect(() => {
+        allSongsLoadedRef.current = allSongsLoaded;
+    }, [allSongsLoaded]);
 
     const handlePlaySong = (songToPlay) => {
         playSong(songToPlay, filteredSongs);
     };
 
     const loadMoreSongs = useCallback(async () => {
-        if (isLoading || allSongsLoaded) return;
+        // Usamos las refs para verificar el estado actual sin depender del ciclo de renderizado
+        if (isLoadingRef.current || allSongsLoadedRef.current) return;
+        
         setIsLoading(true);
         try {
-
+            console.log(`Cargando página ${currentPage}...`);
             const newSongs = await apiFetch(`/songs?page=${currentPage}&size=${pageSize}`);
+            
             if (newSongs.length < pageSize) {
                 setAllSongsLoaded(true);
             }
+
             setSongs(prevSongs => {
+                // Filtramos duplicados por ID por seguridad
                 const existingIds = new Set(prevSongs.map(s => s.id));
                 const uniqueNewSongs = newSongs.filter(s => !existingIds.has(s.id));
                 return [...prevSongs, ...uniqueNewSongs];
             });
+            
             setCurrentPage(prevPage => prevPage + 1);
+
         } catch (error) {
             console.error("Error al cargar más canciones:", error);
         } finally {
             setIsLoading(false);
         }
-    }, [isLoading, allSongsLoaded, currentPage, pageSize]);
+    }, [currentPage, pageSize]); 
 
+    // Carga inicial
     useEffect(() => {
-        if (songs.length === 0) {
+        if (songs.length === 0 && currentPage === 0) {
             loadMoreSongs();
         }
-    }, [loadMoreSongs, songs.length]);
+    }, [loadMoreSongs, songs.length, currentPage]);
 
+    // Filtrado de búsqueda
     useEffect(() => {
         if (searchTerm === '') {
             setFilteredSongs(songs);
@@ -112,27 +143,34 @@ function SearchView() {
         }
     }, [searchTerm, songs]);
 
+    // MANEJO DEL SCROLL 
     useEffect(() => {
         const mainContentEl = document.querySelector('.main-content');
-        mainContentRef.current = mainContentEl;
+        
         const handleScroll = () => {
-            const container = mainContentRef.current;
-            if (container && !isLoading) { 
-                const { scrollTop, clientHeight, scrollHeight } = container;
-                if (scrollTop + clientHeight >= scrollHeight - 100 && searchTerm === '') {
+            if (!mainContentEl) return;
+            
+            const { scrollTop, clientHeight, scrollHeight } = mainContentEl;
+            
+            // Verficar usando las REFS para no depender del estado en el closure
+            // Umbral de 100px antes del final
+            if (scrollTop + clientHeight >= scrollHeight - 100) {
+                if (searchTerm === '' && !isLoadingRef.current && !allSongsLoadedRef.current) {
                     loadMoreSongs();
                 }
             }
         };
+
         if (mainContentEl) {
             mainContentEl.addEventListener('scroll', handleScroll);
         }
+
         return () => {
             if (mainContentEl) {
                 mainContentEl.removeEventListener('scroll', handleScroll);
             }
         };
-    }, [isLoading, searchTerm, loadMoreSongs]);
+    }, [loadMoreSongs, searchTerm]); 
 
     return (
         <main id="search-view-content" className="content-area">
@@ -162,18 +200,23 @@ function SearchView() {
                         onPlay={handlePlaySong}
                     />
                 ))}
-                {isLoading && searchTerm === '' && (
-                    <p style={{ textAlign: 'center', padding: '20px', color: '#b3b3b3' }}>Cargando canciones...</p>
+                
+                {isLoading && (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                        <p style={{ color: '#b3b3b3' }}>Cargando canciones...</p>
+                    </div>
                 )}
+                
                 {searchTerm !== '' && filteredSongs.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '40px', color: '#b3b3b3' }}>
-                        <p>No se encontraron resultados para "{searchTerm}" en la lista de canciones.</p>
-                        {!allSongsLoaded && (
-                            <p style={{ fontSize: '0.9rem', marginTop: '10px' }}>
-                                Sigue haciendo scroll para cargar más canciones y vuelve a intentarlo.
-                            </p>
-                        )}
+                        <p>No se encontraron resultados para "{searchTerm}".</p>
                     </div>
+                )}
+
+                {allSongsLoaded && searchTerm === '' && filteredSongs.length > 0 && (
+                   <p style={{ textAlign: 'center', padding: '20px', color: '#555', fontSize: '0.8rem' }}>
+                       Has llegado al final de la lista.
+                   </p>
                 )}
             </div>
         </main>

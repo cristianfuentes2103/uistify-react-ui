@@ -1,4 +1,3 @@
-// src/components/modals/DeletePlaylistModal.jsx
 import { useState } from 'react';
 import { useModal } from '../../context/ModalContext';
 import { apiFetch } from '../../services/api';

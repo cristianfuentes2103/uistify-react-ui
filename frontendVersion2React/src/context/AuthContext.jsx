@@ -42,7 +42,6 @@ function AuthProvider({ children }) {
   };
 
     const register = async (name, email, password) => {
-    // La URL del endpoint de registro
     const registerUrl = 'https://apidev.uistify.site/api/auth/register';
 
     const response = await fetch(registerUrl, {
@@ -89,10 +88,8 @@ function AuthProvider({ children }) {
 
 // Creamos un "Hook" personalizado para consumir el contexto fácilmente.
 // En lugar de importar `useContext` y `AuthContext` en cada componente,
-// solo importaremos `useAuth`.
 function useAuth() {
   return useContext(AuthContext);
 }
 
-// Exportamos el Proveedor y el Hook.
 export { AuthProvider, useAuth };

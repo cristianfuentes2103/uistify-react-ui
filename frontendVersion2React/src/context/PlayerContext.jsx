@@ -12,48 +12,38 @@ function PlayerProvider({ children }) {
     const [isLoadingSong, setIsLoadingSong] = useState(false);
     const [progress, setProgress] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [queue, setQueue] = useState([]);
-    const [queueIndex, setQueueIndex] = useState(-1);
+    const [queue, setQueue] = useState([]); 
     const { isLoggedIn } = useAuth();
 
     const audioRef = useRef(new Audio());
     const currentObjectUrl = useRef(null);
 
-    // --- EFECTO PARA INICIALIZAR Y SINCRONIZAR EL VOLUMEN ---
-    useEffect(() => {
-        // Al cargar, establece el volumen inicial del elemento de audio
-        audioRef.current.volume = volume;
-    }, []); // Se ejecuta solo una vez al inicio
-
+    // --- VOLUMEN ---
     const getInitialVolume = () => {
         const savedVolume = localStorage.getItem('playerVolume');
-        // Si `savedVolume` es `null` o `undefined`, devolvemos 1 por defecto.
-        if (savedVolume === null || savedVolume === undefined) {
-            return 1;
-        }
-        // Si existe, nos aseguramos de convertirlo a número.
-        const volumeAsNumber = Number(savedVolume);
-        // Si la conversión falla (ej. era un string inválido), también devolvemos 1.
-        return isNaN(volumeAsNumber) ? 1 : volumeAsNumber;
+        return savedVolume ? Number(savedVolume) : 1;
     };
-
     const [volume, setVolume] = useState(getInitialVolume());
-    // --- ¡NUEVA FUNCIÓN PARA CAMBIAR EL VOLUMEN! ---
+
+    useEffect(() => { audioRef.current.volume = volume; }, []);
+
     const changeVolume = (newVolume) => {
-        const volumeValue = Number(newVolume);
-        setVolume(volumeValue); // Actualiza el estado de React
-        audioRef.current.volume = volumeValue; // Actualiza el volumen del elemento <audio>
-        localStorage.setItem('playerVolume', volumeValue); // Guarda la preferencia
+        const v = Number(newVolume);
+        setVolume(v);
+        audioRef.current.volume = v;
+        localStorage.setItem('playerVolume', v);
     };
 
-    const playSong = useCallback(async (song, songList) => {
-        showToast('Cargando canción...', 'info', 2000);
+    // --- REPRODUCCIÓN ---
+    const playSong = useCallback(async (song, songList = null) => {
         if (!isLoggedIn) {
-            showToast('Debes iniciar sesión para reproducir canciones.', 'error');
-            return; // Detenemos la función aquí
+            showToast('Inicia sesión para escuchar música.', 'error');
+            return;
         }
         if (!song?.sourceUrl || isLoadingSong) return;
-        if (song.id === currentSong?.id) {
+
+        // Si es la misma canción, reanudar
+        if (currentSong && song.id === currentSong.id) {
             audioRef.current.play();
             return;
         }
@@ -62,122 +52,127 @@ function PlayerProvider({ children }) {
         setCurrentSong(song);
         if (currentObjectUrl.current) URL.revokeObjectURL(currentObjectUrl.current);
 
-        // Si se proporciona una lista de canciones, la usamos para actualizar la cola
+        // ACTUALIZACIÓN DE COLA INTELIGENTE
+        // Si nos pasan una lista nueva, la usamos 
         if (songList && songList.length > 0) {
             setQueue(songList);
-            setQueueIndex(songList.findIndex(s => s.id === song.id));
         } else if (queue.length === 0) {
-            // Si no hay lista ni cola, la cola es solo la canción actual
+            // Si no hay lista y la cola estaba vacía
             setQueue([song]);
-            setQueueIndex(0);
         }
-        // Si ya hay una cola y no se pasa una nueva lista, se reutiliza la existente
+
         try {
-            const objectKey = song.sourceUrl;
-            const fileEndpointUrl = `${API_BASE_URL}/api/file/${objectKey}`;
             const token = localStorage.getItem('authToken');
-            const response = await fetch(fileEndpointUrl, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!response.ok) throw new Error(`Error ${response.status}`);
-            const audioBlob = await response.blob();
-            const playableUrl = URL.createObjectURL(audioBlob);
-            currentObjectUrl.current = playableUrl;
-            audioRef.current.src = playableUrl;
+            const response = await fetch(`${API_BASE_URL}/api/file/${song.sourceUrl}`, { 
+                headers: { 'Authorization': `Bearer ${token}` } 
+            });
+            
+            if (!response.ok) throw new Error('Error cargando audio');
+            
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            
+            currentObjectUrl.current = url;
+            audioRef.current.src = url;
             await audioRef.current.play();
         } catch (error) {
-            console.error("Error al cargar o reproducir la canción:", error);
-            setCurrentSong(null);
+            console.error("Error reproducción:", error);
         } finally {
             setIsLoadingSong(false);
         }
-    }, [isLoadingSong, currentSong, queue, showToast, isLoggedIn]);
+    }, [isLoadingSong, currentSong, queue, isLoggedIn]);
 
-    const pauseSong = useCallback(() => {
-        audioRef.current.pause();
-    }, []);
+    const pauseSong = useCallback(() => audioRef.current.pause(), []);
 
     const togglePlayPause = useCallback(() => {
-        if (isPlaying) {
-            pauseSong();
-        } else if (currentSong) {
-            audioRef.current.play();
-        }
+        isPlaying ? pauseSong() : (currentSong && audioRef.current.play());
     }, [isPlaying, currentSong, pauseSong]);
 
+    // --- NAVEGACIÓN Y SINCRONIZACIÓN ---
+
+    // Función auxiliar para saber dónde estamos
+    const getCurrentIndex = useCallback(() => {
+        if (!currentSong || queue.length === 0) return -1;
+        return queue.findIndex(s => s.id === currentSong.id);
+    }, [currentSong, queue]);
+
     const playNext = useCallback(() => {
-        if (queue.length === 0 || queueIndex >= queue.length - 1) {
+        const idx = getCurrentIndex();
+        // Si no hay cola o estamos en la última canción
+        if (queue.length === 0 || idx === -1 || idx >= queue.length - 1) {
             console.log("Fin de la cola.");
             return;
         }
-        const nextIndex = queueIndex + 1;
-        const nextSong = queue[nextIndex];
-        // Al llamar a playSong, también le pasamos la cola actual para asegurar consistencia
-        playSong(nextSong, queue);
-    }, [queue, queueIndex, playSong]);
+        const nextSong = queue[idx + 1];
+        playSong(nextSong); // NO pasamos lista, mantenemos la cola actual
+    }, [queue, getCurrentIndex, playSong]);
 
     const playPrevious = useCallback(() => {
-        if (queue.length === 0 || queueIndex <= 0) {
-            console.log("Inicio de la cola.");
+        const idx = getCurrentIndex();
+        if (queue.length === 0 || idx <= 0) {
+            if (audioRef.current.currentTime > 3) audioRef.current.currentTime = 0;
             return;
         }
-        const prevIndex = queueIndex - 1;
-        const prevSong = queue[prevIndex];
-        playSong(prevSong, queue);
-    }, [queue, queueIndex, playSong]);
+        const prevSong = queue[idx - 1];
+        playSong(prevSong);
+    }, [queue, getCurrentIndex, playSong]);
+
+    // Eliminar de la cola en vivo
+    const removeFromQueue = useCallback((songId) => {
+        setQueue(prev => prev.filter(s => s.id !== songId));
+    }, []);
+
+    // Actualizar cola silenciosamente
+    const updateQueue = useCallback((newQueue) => {
+        // Solo actualizamos si la canción actual sigue existiendo en la nueva lista
+        // para evitar bugs extraños.
+        setQueue(newQueue);
+    }, []);
 
     const seek = useCallback((time) => {
-        if (!isNaN(time) && audioRef.current.src) { // Añadimos .src para asegurar que haya audio cargado
+        if (!isNaN(time) && audioRef.current.src) {
             audioRef.current.currentTime = time;
             setProgress(time);
         }
-    }, []); // `seek` no tiene dependencias porque solo interactúa con el audioRef
+    }, []);
 
-    useEffect(() => {
-        // Si el estado de `isLoggedIn` cambia a `false`...
-        if (!isLoggedIn) {
-            // 1. Pausamos la reproducción
-            audioRef.current.pause();
-
-            // 2. Quitamos la fuente para que no se pueda volver a dar play
-            audioRef.current.src = '';
-
-            // 3. Reseteamos todos los estados del reproductor
-            setCurrentSong(null);
-            setQueue([]);
-            setQueueIndex(-1);
-            setProgress(0);
-            setDuration(0);
-        }
-    }, [isLoggedIn]); // <-- Este efecto se dispara cada vez que `isLoggedIn` cambia
-    // --- useEffect para los eventos de audio ---
     useEffect(() => {
         const audio = audioRef.current;
-        const handlePlay = () => setIsPlaying(true);
-        const handlePause = () => setIsPlaying(false);
-        const handleTimeUpdate = () => setProgress(audio.currentTime);
-        const handleLoadedMetadata = () => setDuration(audio.duration);
-        const handleEnded = () => playNext();
+        const setPlay = () => setIsPlaying(true);
+        const setPause = () => setIsPlaying(false);
+        const setTime = () => setProgress(audio.currentTime);
+        const setDur = () => setDuration(audio.duration);
+        const setEnd = () => playNext();
 
-
-        audio.addEventListener('play', handlePlay);
-        audio.addEventListener('pause', handlePause);
-        audio.addEventListener('timeupdate', handleTimeUpdate);
-        audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-        audio.addEventListener('ended', handleEnded);
-
+        audio.addEventListener('play', setPlay);
+        audio.addEventListener('pause', setPause);
+        audio.addEventListener('timeupdate', setTime);
+        audio.addEventListener('loadedmetadata', setDur);
+        audio.addEventListener('ended', setEnd);
 
         return () => {
-            audio.removeEventListener('play', handlePlay);
-            audio.removeEventListener('pause', handlePause);
-            audio.removeEventListener('timeupdate', handleTimeUpdate);
-            audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-            audio.removeEventListener('ended', handleEnded);
-
+            audio.removeEventListener('play', setPlay);
+            audio.removeEventListener('pause', setPause);
+            audio.removeEventListener('timeupdate', setTime);
+            audio.removeEventListener('loadedmetadata', setDur);
+            audio.removeEventListener('ended', setEnd);
         };
     }, [playNext]);
 
+    // Limpieza al desloguear
+    useEffect(() => {
+        if (!isLoggedIn) {
+            audioRef.current.pause();
+            setCurrentSong(null);
+            setQueue([]);
+        }
+    }, [isLoggedIn]);
+
     const value = {
-        currentSong, isPlaying, isLoadingSong, progress, duration,
-        playSong, pauseSong, togglePlayPause, playNext, playPrevious, seek, volume, changeVolume
+        currentSong, isPlaying, isLoadingSong, progress, duration, queue,
+        playSong, pauseSong, togglePlayPause, playNext, playPrevious, seek, 
+        volume, changeVolume, 
+        removeFromQueue, updateQueue 
     };
 
     return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
@@ -185,9 +180,7 @@ function PlayerProvider({ children }) {
 
 function usePlayer() {
     const context = useContext(PlayerContext);
-    if (context === undefined) {
-        throw new Error('usePlayer debe ser usado dentro de un PlayerProvider');
-    }
+    if (context === undefined) throw new Error('usePlayer debe estar en PlayerProvider');
     return context;
 }
 

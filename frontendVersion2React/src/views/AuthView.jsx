@@ -101,7 +101,7 @@ function AuthView() {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, []); // El array vacío `[]` asegura que esto se ejecute solo una vez
+  }, []); 
     // --- COMPONENTE SVG DEL YETI CON `ref`s ---
     const YetiSVG = () => (
         <svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 2048">
