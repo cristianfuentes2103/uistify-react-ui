@@ -1,1 +1,1 @@
-export const API_BASE_URL = 'https://apidev.uistify.site/api';
+export const API_BASE_URL = "${API_URL}";
