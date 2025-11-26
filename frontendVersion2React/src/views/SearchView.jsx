@@ -24,7 +24,6 @@ function SongItem({ song, onPlay }) {
         openModal('addToPlaylist', song);
     };
 
-    // Lógica para la imagen: Si viene vacía, usa la default
     const coverImage = song.pictureUrl || '/src/assets/img/song.png';
     
     return (
@@ -34,7 +33,6 @@ function SongItem({ song, onPlay }) {
                     src={coverImage} 
                     alt={song.title} 
                     className="song-item-cover"
-                    // Si la URL falla (404), ponemos la default
                     onError={(e) => { e.target.src = '/src/assets/img/song.png'; }}
                 />
                 <button onClick={handlePlayClick} className="song-item-play-btn">
@@ -60,7 +58,6 @@ function SongItem({ song, onPlay }) {
     );
 }
 
-// --- Componente principal de la Vista de Búsqueda ---
 function SearchView() { 
     const navigate = useNavigate(); 
     const { playSong } = usePlayer();
@@ -69,21 +66,18 @@ function SearchView() {
     const [filteredSongs, setFilteredSongs] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
+    
+    // Estado visual
     const [isLoading, setIsLoading] = useState(false);
     const [allSongsLoaded, setAllSongsLoaded] = useState(false);
     
-    const pageSize = 25;
+    const pageSize = 20;
     
-    // USAMOS REFS PARA EL SCROLL:
-    // Esto evita que el listener se rompa por closures obsoletos
-    const isLoadingRef = useRef(isLoading);
-    const allSongsLoadedRef = useRef(allSongsLoaded);
+    // REFS: Iniciamos con el valor por defecto
+    const isLoadingRef = useRef(false);
+    const allSongsLoadedRef = useRef(false);
 
-    // Mantenemos las refs sincronizadas con el estado
-    useEffect(() => {
-        isLoadingRef.current = isLoading;
-    }, [isLoading]);
-
+    // Sincronizamos solo allSongsLoaded que es menos crítico en timing
     useEffect(() => {
         allSongsLoadedRef.current = allSongsLoaded;
     }, [allSongsLoaded]);
@@ -93,10 +87,13 @@ function SearchView() {
     };
 
     const loadMoreSongs = useCallback(async () => {
-        // Usamos las refs para verificar el estado actual sin depender del ciclo de renderizado
+        // Verificación de seguridad inmediata
         if (isLoadingRef.current || allSongsLoadedRef.current) return;
         
-        setIsLoading(true);
+        // 1. BLOQUEO SÍNCRONO (Inmediato)
+        isLoadingRef.current = true; 
+        setIsLoading(true); // Actualización visual (asíncrona)
+
         try {
             console.log(`Cargando página ${currentPage}...`);
             const newSongs = await apiFetch(`/songs?page=${currentPage}&size=${pageSize}`);
@@ -106,7 +103,6 @@ function SearchView() {
             }
 
             setSongs(prevSongs => {
-                // Filtramos duplicados por ID por seguridad
                 const existingIds = new Set(prevSongs.map(s => s.id));
                 const uniqueNewSongs = newSongs.filter(s => !existingIds.has(s.id));
                 return [...prevSongs, ...uniqueNewSongs];
@@ -117,6 +113,8 @@ function SearchView() {
         } catch (error) {
             console.error("Error al cargar más canciones:", error);
         } finally {
+            // 2. DESBLOQUEO SÍNCRONO (Inmediato)
+            isLoadingRef.current = false;
             setIsLoading(false);
         }
     }, [currentPage, pageSize]); 
@@ -128,7 +126,7 @@ function SearchView() {
         }
     }, [loadMoreSongs, songs.length, currentPage]);
 
-    // Filtrado de búsqueda
+    // Filtrado
     useEffect(() => {
         if (searchTerm === '') {
             setFilteredSongs(songs);
@@ -143,7 +141,7 @@ function SearchView() {
         }
     }, [searchTerm, songs]);
 
-    // MANEJO DEL SCROLL 
+    // SCROLL INFINITO
     useEffect(() => {
         const mainContentEl = document.querySelector('.main-content');
         
@@ -152,8 +150,7 @@ function SearchView() {
             
             const { scrollTop, clientHeight, scrollHeight } = mainContentEl;
             
-            // Verficar usando las REFS para no depender del estado en el closure
-            // Umbral de 100px antes del final
+            // Usamos isLoadingRef.current que ahora es 100% preciso en tiempo real
             if (scrollTop + clientHeight >= scrollHeight - 100) {
                 if (searchTerm === '' && !isLoadingRef.current && !allSongsLoadedRef.current) {
                     loadMoreSongs();
