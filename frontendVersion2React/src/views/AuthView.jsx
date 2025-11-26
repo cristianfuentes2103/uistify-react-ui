@@ -128,7 +128,7 @@ function AuthView() {
             <div className="container">
                 <div id="auth-view" className="view">
                     <div className="logo-container" title="Logo de UistiFy">
-                        <img src="/src/assets/img/UisTiFy.png" alt="Logo de UistiFy" />
+                        <img src="/src/img/UisTiFy.png" alt="Logo de UistiFy" />
                     </div>
                     <div className="form-container">
                         <div className="yeti-container">

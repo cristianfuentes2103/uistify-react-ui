@@ -133,10 +133,10 @@ function ArtistView() {
             <div className="artist-hero">
               <div className="artist-hero-image-wrapper">
                 <img
-                  src={artistProfile.portraitUrl || '/src/assets/img/default-artist.png'}
+                  src={artistProfile.portraitUrl || '/src/img/default-artist.png'}
                   alt={artistProfile.name}
                   className="artist-hero-img"
-                  onError={(e) => { e.target.src = '/src/assets/img/default-artist.png'; }}
+                  onError={(e) => { e.target.src = '/src/img/default-artist.png'; }}
                 />
               </div>
 
@@ -193,10 +193,10 @@ function ArtistView() {
                       </div>
                       <div className="col-title">
                         <img
-                          src={song.pictureUrl || '/src/assets/img/song.png'}
+                          src={song.pictureUrl || '/src/img/song.png'}
                           alt="Cover"
                           className="song-row-cover"
-                          onError={(e) => { e.target.src = '/src/assets/img/song.png'; }}
+                          onError={(e) => { e.target.src = '/src/img/song.png'; }}
                         />
                         <div className="song-row-info">
                           <span className="song-name">{song.title}</span>
